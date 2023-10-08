@@ -1,0 +1,14 @@
+[package]
+name = "microbit-led-repl"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+cortex-m = { version = "0.7.7", features = ["critical-section-single-core"] }
+cortex-m-rt = "0.7.3"
+heapless = "0.7.16"
+microbit-v2 = "0.13.0"
+nb = "1.1.0"
+panic-halt = "0.2.0"
+panic-rtt-target = { version = "0.1.2", features = ["cortex-m"] }
+rtt-target = "0.4.0"
