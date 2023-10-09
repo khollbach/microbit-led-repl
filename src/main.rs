@@ -3,6 +3,7 @@
 
 use core::fmt::Write;
 use core::str;
+use core::mem;
 use cortex_m_rt::entry;
 use microbit::{
     hal::{
@@ -57,7 +58,9 @@ unsafe fn main() -> ! {
 
         // TODO: why is backspace breaking our text input code ?
 
-        let pin: &mut dyn StatefulOutputPin<Error=Void> = match str::from_utf8(&buf).unwrap() {
+        let cmdvec = mem::take(&mut buf);
+        let cmdstr = str::from_utf8(&cmdvec).unwrap();
+        let pin: &mut dyn StatefulOutputPin<Error=Void> = match cmdstr {
             "c1" => &mut board.display_pins.col1,
             "c2" => &mut board.display_pins.col2,
             "c3" => &mut board.display_pins.col3,
@@ -74,7 +77,6 @@ unsafe fn main() -> ! {
                 continue;
             }
         };
-        buf.clear();
 
         if pin.is_set_high().void_unwrap() {
             pin.set_low().void_unwrap();
