@@ -2,8 +2,8 @@
 #![no_main]
 
 use core::fmt::Write;
-use core::str;
 use core::mem;
+use core::str;
 use cortex_m_rt::entry;
 use microbit::{
     hal::{
@@ -18,7 +18,7 @@ use rtt_target::{rprintln, rtt_init_print};
 use void::{ResultVoidExt, Void};
 
 #[entry]
-unsafe fn main() -> ! {
+fn main() -> ! {
     static mut TX_BUF: [u8; 1] = [0u8];
     static mut RX_BUF: [u8; 1] = [0u8];
 
@@ -40,6 +40,9 @@ unsafe fn main() -> ! {
     let mut buf = heapless::Vec::<u8, 100>::new();
 
     loop {
+        tx.bwrite_all(b"> ").unwrap();
+        tx.bflush().unwrap();
+
         loop {
             let b = nb::block!(rx.read()).unwrap();
 
@@ -56,11 +59,9 @@ unsafe fn main() -> ! {
             buf.push(b).expect("buffer overflow");
         }
 
-        // TODO: why is backspace breaking our text input code ?
-
         let cmdvec = mem::take(&mut buf);
         let cmdstr = str::from_utf8(&cmdvec).unwrap();
-        let pin: &mut dyn StatefulOutputPin<Error=Void> = match cmdstr {
+        let pin: &mut dyn StatefulOutputPin<Error = Void> = match cmdstr {
             "c1" => &mut board.display_pins.col1,
             "c2" => &mut board.display_pins.col2,
             "c3" => &mut board.display_pins.col3,
@@ -78,13 +79,14 @@ unsafe fn main() -> ! {
             }
         };
 
-        if pin.is_set_high().void_unwrap() {
-            pin.set_low().void_unwrap();
-        } else {
-            pin.set_high().void_unwrap();
-        }
+        toggle(pin);
+    }
+}
 
-        // TODO: why is toggle not available ?
-        // pin.togg
+fn toggle(pin: &mut dyn StatefulOutputPin<Error = Void>) {
+    if pin.is_set_high().void_unwrap() {
+        pin.set_low().void_unwrap();
+    } else {
+        pin.set_high().void_unwrap();
     }
 }
